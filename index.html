@@ -1,0 +1,523 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>🐛 Покорми голодную гусеницу</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            user-select: none;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: linear-gradient(145deg, #e8f5e9 0%, #a5d6a7 100%);
+            font-family: 'Comic Sans MS', 'Segoe UI', cursive, sans-serif;
+            padding: 16px;
+            margin: 0;
+        }
+
+        .game-wrapper {
+            max-width: 650px;
+            width: 100%;
+            background: #fef8e7;
+            border-radius: 60px 60px 40px 40px;
+            padding: 20px 20px 28px;
+            box-shadow: 0 20px 30px rgba(0,0,0,0.15), 0 8px 0 #7d9b7a;
+            border: 4px solid #7d9b7a;
+        }
+
+        h1 {
+            text-align: center;
+            font-size: 2rem;
+            font-weight: 700;
+            color: #2d4b2c;
+            text-shadow: 3px 3px 0 #b5d6b1;
+            margin-top: -6px;
+            margin-bottom: 12px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 14px;
+            flex-wrap: wrap;
+        }
+
+        /* ----- ГУСЕНИЦА ----- */
+        .caterpillar-area {
+            background: #dcedc8;
+            border-radius: 60px;
+            padding: 20px;
+            border: 4px solid #6c8f69;
+            margin-bottom: 16px;
+            min-height: 200px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .caterpillar {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            flex-wrap: wrap;
+            justify-content: center;
+            padding: 10px;
+            font-size: 2.8rem;
+            transition: all 0.3s;
+        }
+
+        .caterpillar .segment {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.6rem;
+            transition: all 0.3s;
+            box-shadow: inset -4px -4px 8px rgba(0,0,0,0.15), 4px 4px 8px rgba(0,0,0,0.1);
+        }
+
+        .caterpillar .head {
+            width: 75px;
+            height: 75px;
+            font-size: 3.6rem;
+            background: radial-gradient(circle at 30% 30%, #66bb6a, #388e3c);
+            border: 3px solid #2e7d32;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s;
+        }
+
+        .caterpillar .body {
+            background: radial-gradient(circle at 30% 30%, #81c784, #43a047);
+            border: 3px solid #2e7d32;
+        }
+
+        .caterpillar .body:nth-child(2) { background: radial-gradient(circle at 30% 30%, #a5d6a7, #66bb6a); }
+        .caterpillar .body:nth-child(3) { background: radial-gradient(circle at 30% 30%, #81c784, #4caf50); }
+        .caterpillar .body:nth-child(4) { background: radial-gradient(circle at 30% 30%, #a5d6a7, #66bb6a); }
+        .caterpillar .body:nth-child(5) { background: radial-gradient(circle at 30% 30%, #81c784, #4caf50); }
+
+        .caterpillar .head.happy {
+            background: radial-gradient(circle at 30% 30%, #ffd54f, #f9a825);
+            border-color: #f57f17;
+            animation: bounce 0.5s ease;
+        }
+
+        .caterpillar .head.sad {
+            background: radial-gradient(circle at 30% 30%, #90caf9, #1a73e8);
+            border-color: #0d47a1;
+            animation: shake 0.4s ease;
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.15); }
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: rotate(0deg); }
+            25% { transform: rotate(-8deg); }
+            75% { transform: rotate(8deg); }
+        }
+
+        /* ----- ЗАПРОС ----- */
+        .request-area {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            background: #fff8e1;
+            padding: 12px 24px;
+            border-radius: 60px;
+            border: 3px solid #b58a6a;
+            margin: 8px 0 12px;
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: #3d2e1e;
+            flex-wrap: wrap;
+        }
+
+        .request-area .label {
+            font-size: 1.4rem;
+        }
+
+        .request-number {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            background: #ff6b6b;
+            color: white;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            font-size: 2.6rem;
+            font-weight: 900;
+            border: 4px solid #c62828;
+            box-shadow: 0 4px 0 #7f1d1d;
+            animation: pulse 1.5s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.08); }
+        }
+
+        /* ----- ЛИСТОЧКИ ----- */
+        .leaves-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 14px;
+            margin: 16px 0 18px;
+            padding: 10px;
+            background: #e8f5e9;
+            border-radius: 40px;
+            border: 3px solid #6c8f69;
+        }
+
+        .leaf {
+            aspect-ratio: 1/1;
+            border-radius: 50% 50% 50% 0;
+            background: radial-gradient(circle at 30% 30%, #81c784, #388e3c);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.4rem;
+            font-weight: 900;
+            color: white;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.4);
+            cursor: pointer;
+            transition: all 0.15s;
+            border: 4px solid #2e7d32;
+            box-shadow: 0 6px 0 #1b5e20, inset -4px -4px 8px rgba(0,0,0,0.2);
+            transform: rotate(-15deg);
+            font-family: 'Comic Sans MS', cursive;
+        }
+
+        .leaf:active {
+            transform: translateY(4px) rotate(-15deg);
+            box-shadow: 0 2px 0 #1b5e20;
+        }
+
+        .leaf.correct {
+            animation: eatLeaf 0.5s ease forwards;
+        }
+
+        @keyframes eatLeaf {
+            0% { transform: rotate(-15deg) scale(1); opacity: 1; }
+            50% { transform: rotate(-15deg) scale(0.5); opacity: 0.6; }
+            100% { transform: rotate(-15deg) scale(0); opacity: 0; }
+        }
+
+        .leaf.wrong {
+            animation: shakeLeaf 0.4s ease;
+        }
+
+        @keyframes shakeLeaf {
+            0%, 100% { transform: rotate(-15deg) translateX(0); }
+            25% { transform: rotate(-15deg) translateX(-10px); }
+            75% { transform: rotate(-15deg) translateX(10px); }
+        }
+
+        .leaf.disabled {
+            pointer-events: none;
+            opacity: 0.5;
+        }
+
+        /* ----- ИНФО ----- */
+        .info-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .score {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: #2d4b2c;
+            background: #fff6dd;
+            padding: 6px 20px;
+            border-radius: 50px;
+            border: 2px solid #6c8f69;
+        }
+
+        .btn {
+            background: #ffebc6;
+            border: none;
+            padding: 10px 24px;
+            font-size: 1.1rem;
+            font-weight: 700;
+            border-radius: 60px;
+            border: 3px solid #6c8f69;
+            box-shadow: 0 5px 0 #4e6e4b;
+            color: #2d4b2c;
+            cursor: pointer;
+            transition: all 0.07s;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .btn:active {
+            transform: translateY(4px);
+            box-shadow: 0 1px 0 #4e6e4b;
+        }
+
+        .btn-primary {
+            background: #ffe28a;
+            border-color: #b68f3b;
+            box-shadow: 0 5px 0 #7d6525;
+        }
+
+        .message-box {
+            text-align: center;
+            font-size: 1.3rem;
+            font-weight: 700;
+            padding: 10px;
+            border-radius: 60px;
+            background: #fcf3d4;
+            border: 3px solid #b89f6b;
+            margin-top: 12px;
+            min-height: 56px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            color: #2d4b2c;
+            transition: 0.2s;
+        }
+
+        .message-box.success {
+            background: #c8e6c9;
+            border-color: #388e3c;
+        }
+
+        .message-box.error {
+            background: #ffcdd2;
+            border-color: #c62828;
+        }
+
+        @media (max-width: 580px) {
+            .game-wrapper { padding: 12px; }
+            h1 { font-size: 1.5rem; }
+            .caterpillar .segment { width: 45px; height: 45px; font-size: 2rem; }
+            .caterpillar .head { width: 55px; height: 55px; font-size: 2.8rem; }
+            .request-area { font-size: 1.3rem; padding: 10px 16px; }
+            .request-number { width: 48px; height: 48px; font-size: 2rem; }
+            .leaf { font-size: 1.8rem; }
+            .leaves-grid { gap: 8px; padding: 8px; }
+            .message-box { font-size: 1.1rem; min-height: 48px; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="game-wrapper">
+    <h1>
+        <span>🐛</span> Покорми голодную гусеницу <span>🍃</span>
+    </h1>
+
+    <div class="caterpillar-area">
+        <div class="caterpillar" id="caterpillar">
+            <div class="head" id="headSegment">🐛</div>
+            <div class="segment body">🍃</div>
+            <div class="segment body">🍃</div>
+            <div class="segment body">🍃</div>
+            <div class="segment body">🍃</div>
+        </div>
+
+        <div class="request-area">
+            <span class="label">🍽️ Съешь:</span>
+            <span class="request-number" id="requestNumber">3</span>
+        </div>
+    </div>
+
+    <div class="leaves-grid" id="leavesGrid">
+        <!-- Листочки будут созданы в JS -->
+    </div>
+
+    <div class="info-bar">
+        <div class="score">⭐ <span id="scoreCount">0</span></div>
+        <button class="btn btn-primary" id="resetBtn">🔄 Новая игра</button>
+    </div>
+
+    <div class="message-box" id="messageBox">
+        🍃 Нажми на листочек с нужной цифрой!
+    </div>
+</div>
+
+<script>
+    (function() {
+        // ---------- КОНФИГУРАЦИЯ ----------
+        const MAX_NUMBER = 5;
+        let currentNumber = 0;
+        let score = 0;
+        let isPlaying = false;
+        let leafStates = [];
+
+        // DOM
+        const requestNumber = document.getElementById('requestNumber');
+        const leavesGrid = document.getElementById('leavesGrid');
+        const scoreCount = document.getElementById('scoreCount');
+        const messageBox = document.getElementById('messageBox');
+        const resetBtn = document.getElementById('resetBtn');
+        const headSegment = document.getElementById('headSegment');
+
+        // ---------- СОЗДАНИЕ ЛИСТОЧКОВ ----------
+        function createLeaves() {
+            leavesGrid.innerHTML = '';
+            leafStates = [];
+
+            let numbers = [];
+            for (let i = 1; i <= MAX_NUMBER; i++) {
+                numbers.push(i);
+            }
+            shuffleArray(numbers);
+
+            for (let i = 0; i < MAX_NUMBER; i++) {
+                const leaf = document.createElement('div');
+                leaf.className = 'leaf';
+                leaf.dataset.number = numbers[i];
+                leaf.textContent = numbers[i];
+                leaf.addEventListener('click', () => onLeafClick(leaf));
+                leavesGrid.appendChild(leaf);
+                leafStates.push(false);
+            }
+        }
+
+        function shuffleArray(arr) {
+            for (let i = arr.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [arr[i], arr[j]] = [arr[j], arr[i]];
+            }
+            return arr;
+        }
+
+        // ---------- ГЕНЕРАЦИЯ НОВОГО ЧИСЛА ----------
+        function generateNewNumber() {
+            const available = [];
+            const leaves = document.querySelectorAll('.leaf');
+            leaves.forEach((leaf, index) => {
+                if (!leafStates[index]) {
+                    available.push(parseInt(leaf.dataset.number));
+                }
+            });
+
+            if (available.length === 0) {
+                showWinMessage();
+                return;
+            }
+
+            const randomIndex = Math.floor(Math.random() * available.length);
+            currentNumber = available[randomIndex];
+            requestNumber.textContent = currentNumber;
+            isPlaying = true;
+
+            messageBox.textContent = `🍃 Найди листочек с цифрой ${currentNumber}!`;
+            messageBox.className = 'message-box';
+        }
+
+        // ---------- ОБРАБОТКА КЛИКА ----------
+        function onLeafClick(leaf) {
+            if (!isPlaying) return;
+            const index = Array.from(leavesGrid.children).indexOf(leaf);
+            if (leafStates[index]) return;
+
+            const leafNumber = parseInt(leaf.dataset.number);
+
+            if (leafNumber === currentNumber) {
+                // ✅ Правильно!
+                leafStates[index] = true;
+                leaf.classList.add('correct');
+                leaf.classList.add('disabled');
+                score++;
+                scoreCount.textContent = score;
+
+                // Гусеница радуется
+                headSegment.textContent = '🥳';
+                headSegment.className = 'head happy';
+
+                messageBox.textContent = `🎉 Ура! Гусеница съела листочек с цифрой ${currentNumber}!`;
+                messageBox.className = 'message-box success';
+
+                isPlaying = false;
+                setTimeout(() => {
+                    headSegment.textContent = '🐛';
+                    headSegment.className = 'head';
+                    generateNewNumber();
+                }, 1000);
+
+            } else {
+                // ❌ Неправильно!
+                leaf.classList.add('wrong');
+                setTimeout(() => {
+                    leaf.classList.remove('wrong');
+                }, 400);
+
+                // Гусеница грустит
+                headSegment.textContent = '😢';
+                headSegment.className = 'head sad';
+
+                messageBox.textContent = `😢 Ой! Гусеница хотела ${currentNumber}, а ты дал ${leafNumber}. Попробуй ещё!`;
+                messageBox.className = 'message-box error';
+
+                setTimeout(() => {
+                    headSegment.textContent = '🐛';
+                    headSegment.className = 'head';
+                    if (!isPlaying) {
+                        messageBox.textContent = `🍃 Найди листочек с цифрой ${currentNumber}!`;
+                        messageBox.className = 'message-box';
+                    }
+                }, 1000);
+            }
+        }
+
+        // ---------- ПОБЕДА ----------
+        function showWinMessage() {
+            isPlaying = false;
+            messageBox.textContent = '🎊 Поздравляем! Гусеница сыта и счастлива! 🐛❤️';
+            messageBox.className = 'message-box success';
+            requestNumber.textContent = '🎉';
+            headSegment.textContent = '🥳';
+            headSegment.className = 'head happy';
+        }
+
+        // ---------- СБРОС ----------
+        function resetGame() {
+            score = 0;
+            scoreCount.textContent = score;
+            createLeaves();
+            headSegment.textContent = '🐛';
+            headSegment.className = 'head';
+            messageBox.textContent = '🔄 Новая игра! Покорми гусеницу!';
+            messageBox.className = 'message-box';
+            generateNewNumber();
+        }
+
+        // ---------- ИНИЦИАЛИЗАЦИЯ ----------
+        function init() {
+            resetGame();
+            resetBtn.addEventListener('click', resetGame);
+        }
+
+        if (document.readyState === 'complete') {
+            init();
+        } else {
+            window.addEventListener('load', init);
+        }
+    })();
+</script>
+</body>
+</html>
